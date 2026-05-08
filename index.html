@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Travel Graph Planner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <section class="opening-screen" id="opening" aria-label="Opening">
+      <div class="opening-content">
+        <div class="glass-entry">
+          <p class="eyebrow">DSA Graph Project</p>
+          <h1>Travel Graph Planner</h1>
+          <p class="hero-copy">
+            A smart India route planner that thinks in graphs, vehicles, traffic, weather, fuel stops, charging breaks, airports, trains, and famous places worth visiting.
+          </p>
+          <div class="entry-panel">
+            <label>
+              <span>Trip title</span>
+              <input id="tripName" type="text" value="Hyderabad weekend route" />
+            </label>
+            <button id="enterPlanner" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h12.2l-4.6-4.6L14 6l7 7-7 7-1.4-1.4 4.6-4.6H5v-2Z" />
+              </svg>
+              Plan my route
+            </button>
+          </div>
+          <div class="entry-choices">
+            <button class="choice-card" id="openSuggestions" type="button">
+              <span>Smart Suggestions</span>
+              <strong>Season and budget trip ideas</strong>
+              <small>Summer, monsoon, winter and low-budget route picks.</small>
+            </button>
+            <button class="choice-card" id="quickPlanner" type="button">
+              <span>Graph Planner</span>
+              <strong>Choose source and destination</strong>
+              <small>Use Dijkstra, vehicle range, service stops and visits.</small>
+            </button>
+          </div>
+          <div class="opening-stats" aria-label="Project highlights">
+            <span><strong>250</strong> places</span>
+            <span><strong>Fuel</strong> stops</span>
+            <span><strong>EV</strong> charging</span>
+            <span><strong>Famous</strong> places</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="suggestions-screen screen-hidden" id="suggestions" aria-label="Trip suggestions">
+      <div class="suggestions-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Smart Suggestions</p>
+            <h2>Pick a ready trip</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button class="ghost-text-button" id="backToOpening" type="button">Title page</button>
+            <button class="ghost-text-button" id="suggestionToPlanner" type="button">Open planner</button>
+          </div>
+        </header>
+        <div class="suggestion-intro">
+          <div>
+            <span class="mini-label">Budget wise</span>
+            <strong>Trips grouped by season, cost range, visits, and travel mood.</strong>
+          </div>
+          <p>Choose any card and the planner opens with the source, destination, vehicle, optimization, and famous places already set.</p>
+        </div>
+        <div class="suggestion-controls" aria-label="Ready trip navigation">
+          <span id="suggestionRangeLabel">Showing ready trips</span>
+          <div class="suggestion-pager">
+            <button class="ghost-text-button" id="suggestionPrev" type="button">Back</button>
+            <strong id="suggestionPageLabel">1 / 1</strong>
+            <button class="ghost-text-button" id="suggestionNext" type="button">Next</button>
+          </div>
+        </div>
+        <div class="suggestion-grid" id="suggestionGrid"></div>
+      </div>
+    </section>
+
+    <div class="app-shell screen-hidden" id="planner">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Graph Engine</p>
+          <h2>Plan the route</h2>
+        </div>
+        <div class="header-stats" aria-label="Project stats">
+          <span><strong id="edgeCount">0</strong> graph edges</span>
+          <span><strong id="vehicleStat">Car</strong> vehicle</span>
+          <span><strong>Dijkstra</strong></span>
+        </div>
+      </header>
+
+      <main class="planner-grid">
+        <section class="planner-panel" aria-label="Planner controls">
+          <form id="plannerForm" class="planner-form">
+            <div class="field-grid">
+              <label>
+                <span>From</span>
+                <select id="sourceSelect" name="source"></select>
+              </label>
+              <label>
+                <span>To</span>
+                <select id="destinationSelect" name="destination"></select>
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>Vehicle</legend>
+              <div class="vehicle-grid" id="vehicleControls">
+                <label class="vehicle-card car">
+                  <input type="radio" name="vehicle" value="car" checked />
+                  <span class="vehicle-photo"></span>
+                  <strong>Car</strong>
+                  <small>Petrol or diesel stops</small>
+                </label>
+                <label class="vehicle-card bike">
+                  <input type="radio" name="vehicle" value="bike" />
+                  <span class="vehicle-photo"></span>
+                  <strong>Bike</strong>
+                  <small>More frequent fuel stops</small>
+                </label>
+                <label class="vehicle-card ev">
+                  <input type="radio" name="vehicle" value="ev" />
+                  <span class="vehicle-photo"></span>
+                  <strong>EV</strong>
+                  <small>Charging breaks</small>
+                </label>
+                <label class="vehicle-card diesel">
+                  <input type="radio" name="vehicle" value="diesel" />
+                  <span class="vehicle-photo"></span>
+                  <strong>Diesel</strong>
+                  <small>Long range highway plan</small>
+                </label>
+                <label class="vehicle-card cng">
+                  <input type="radio" name="vehicle" value="cng" />
+                  <span class="vehicle-photo"></span>
+                  <strong>CNG</strong>
+                  <small>Gas station planning</small>
+                </label>
+                <label class="vehicle-card public">
+                  <input type="radio" name="vehicle" value="public" />
+                  <span class="vehicle-photo"></span>
+                  <strong>Public</strong>
+                  <small>Road, train, flight mix</small>
+                </label>
+                <label class="vehicle-card train">
+                  <input type="radio" name="vehicle" value="train" />
+                  <span class="vehicle-photo"></span>
+                  <strong>Train</strong>
+                  <small>Station access plus rail route</small>
+                </label>
+                <label class="vehicle-card flight">
+                  <input type="radio" name="vehicle" value="flight" />
+                  <span class="vehicle-photo"></span>
+                  <strong>Flight</strong>
+                  <small>Airport access plus air route</small>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Optimize</legend>
+              <div class="segmented" id="priorityControls">
+                <button type="button" data-priority="balanced" class="is-active">Balanced</button>
+                <button type="button" data-priority="time">Fastest</button>
+                <button type="button" data-priority="cost">Cheapest</button>
+                <button type="button" data-priority="distance">Shortest</button>
+                <button type="button" data-priority="scenic">Scenic</button>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Travel modes</legend>
+              <div class="mode-grid" id="modeControls">
+                <label class="mode-chip">
+                  <input type="checkbox" value="road" checked />
+                  <span>Road</span>
+                </label>
+                <label class="mode-chip">
+                  <input type="checkbox" value="train" />
+                  <span>Train</span>
+                </label>
+                <label class="mode-chip">
+                  <input type="checkbox" value="flight" />
+                  <span>Flight</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="via-planner">
+              <legend>Via place</legend>
+              <div class="via-controls">
+                <select id="waypointSelect" aria-label="Choose via place"></select>
+                <button id="addWaypoint" type="button">Add via</button>
+                <button id="autoWaypoint" type="button">Auto via</button>
+              </div>
+              <div id="selectedWaypointList" class="selected-visit-list">
+                <div class="empty-state">Direct route. Add a via place only if you want to force the path.</div>
+              </div>
+            </fieldset>
+
+            <label class="visit-toggle">
+              <input id="visitToggle" type="checkbox" checked />
+              <span>
+                <strong>Suggest and add famous places</strong>
+                <small>Click a place card to add it into the journey and recalculate the full trip.</small>
+              </span>
+            </label>
+
+            <div class="selected-visits">
+              <div class="section-heading compact">
+                <span class="mini-label">Selected visits</span>
+                <strong id="visitCount">0 added</strong>
+              </div>
+              <div id="selectedVisitList" class="selected-visit-list">
+                <div class="empty-state">No famous place added yet.</div>
+              </div>
+            </div>
+
+            <button class="plan-button" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 17.5 9.5 12 4 6.5 5.5 5l7 7-7 7L4 17.5Zm8 0 5.5-5.5L12 6.5 13.5 5l7 7-7 7-1.5-1.5Z" />
+              </svg>
+              Plan route
+            </button>
+          </form>
+        </section>
+
+        <section class="map-panel" aria-label="Travel graph map">
+          <div class="map-toolbar">
+            <div>
+              <span class="mini-label">Selected path</span>
+              <strong id="pathTitle">Hyderabad to Goa</strong>
+            </div>
+            <div class="toolbar-actions">
+              <button class="ghost-button" id="swapButton" type="button" title="Swap source and destination">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 7h11l-3-3 1.4-1.4L22 8l-5.6 5.4L15 12l3-3H7V7Zm10 10H6l3 3-1.4 1.4L2 16l5.6-5.4L9 12l-3 3h11v2Z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="map-stage">
+            <svg id="networkMap" viewBox="0 0 100 100" role="img" aria-label="Graph visualization"></svg>
+          </div>
+        </section>
+      </main>
+
+      <section class="results-strip" aria-label="Route results">
+        <div class="metric">
+          <span>Distance</span>
+          <strong id="distanceMetric">--</strong>
+        </div>
+        <div class="metric">
+          <span>Time</span>
+          <strong id="timeMetric">--</strong>
+        </div>
+        <div class="metric">
+          <span>Cost</span>
+          <strong id="costMetric">--</strong>
+        </div>
+        <div class="metric">
+          <span>Route stops</span>
+          <strong id="stopsMetric">--</strong>
+        </div>
+        <div class="metric">
+          <span>Fuel / charge</span>
+          <strong id="serviceMetric">--</strong>
+        </div>
+        <div class="metric">
+          <span>Scenic</span>
+          <strong id="scenicMetric">--</strong>
+        </div>
+      </section>
+
+      <section class="algorithm-panel">
+        <div>
+          <span class="mini-label">Algorithm</span>
+          <strong>Dijkstra shortest path</strong>
+        </div>
+        <div>
+          <span class="mini-label">Weight</span>
+          <strong id="weightLabel">Balanced</strong>
+        </div>
+        <div>
+          <span class="mini-label">Visited</span>
+          <strong id="visitedLabel">0 nodes</strong>
+        </div>
+        <div class="vehicle-summary">
+          <span class="vehicle-preview car" id="vehiclePreview"></span>
+          <div>
+            <span class="mini-label">Vehicle plan</span>
+            <strong id="vehicleLabel">Petrol Car</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="trip-actions">
+        <button id="completeTrip" class="complete-button" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9.5 16.6-4.1-4.1L4 13.9l5.5 5.5L21 7.9 19.6 6.5 9.5 16.6Z" />
+          </svg>
+          My trip completed
+        </button>
+      </section>
+
+      <section class="details-grid">
+        <div class="route-panel wide">
+          <div class="section-heading">
+            <span class="mini-label">Itinerary</span>
+            <strong id="routeSummary">Waiting for route</strong>
+          </div>
+          <ol id="itineraryList" class="itinerary-list"></ol>
+        </div>
+
+        <div class="route-panel">
+          <div class="section-heading">
+            <span class="mini-label">Fuel / Charging</span>
+            <strong>Stoppage plan</strong>
+          </div>
+          <div id="serviceList" class="service-list"></div>
+        </div>
+
+        <div class="route-panel">
+          <div class="section-heading">
+            <span class="mini-label">Visit Nearby</span>
+            <strong>Famous places</strong>
+          </div>
+          <div id="attractionList" class="attraction-list"></div>
+        </div>
+
+        <div class="route-panel">
+          <div class="section-heading">
+            <span class="mini-label">Alternatives</span>
+            <strong>Other graph weights</strong>
+          </div>
+          <div id="alternativesList" class="alternatives-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="thanks-screen screen-hidden" id="thanks" aria-label="Trip completed">
+      <div class="thanks-card">
+        <p class="eyebrow">Trip Completed</p>
+        <h2>Thanks for using our website</h2>
+        <p id="thanksSummary" class="hero-copy">Your trip plan is ready.</p>
+        <button id="planAgain" class="plan-button" type="button">Plan another trip</button>
+      </div>
+    </section>
+
+    <script src="/static-planner.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
